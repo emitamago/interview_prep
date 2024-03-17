@@ -103,16 +103,28 @@ func (b *bucket) search(key string) bool {
 
 func main() {
 	myHashTable := Init()
-	myHashTable.Insert("emi")
-	myHashTable.Insert("bond")
-	myHashTable.Insert("gio")
-	myHashTable.Insert("levi")
-	myHashTable.Insert("ram")
+	list := []string{
+		"emi",
+		"bond",
+		"levi",
+		"gio",
+		"ram",
+	}
+
+	// Inserting key
+	for _, v := range list {
+		myHashTable.Insert(v)
+	}
+
+	// Searching for keys
 	answer1 := myHashTable.Search("emi")
 	answer2 := myHashTable.Search("Yu")
 	fmt.Printf("awnser1 is %v\n", answer1)
 	fmt.Printf("awnser2 is %v\n", answer2)
-	myHashTable.Insert("emi")
-	myHashTable.Delete("emi")
 
+	// Try to insert existing key
+	myHashTable.Insert("emi")
+
+	// Delete key
+	myHashTable.Delete("emi")
 }
