@@ -1,6 +1,8 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+)
 
 const ArraySize = 7
 
@@ -45,29 +47,72 @@ func (h *HashTable) Insert(key string) {
 }
 
 // define remove for hastable
-// func (h *HashTable) Delete (key string) {
-// 	index := hash(key)
-// }
+func (h *HashTable) Delete(key string) {
+	index := hash(key)
+	h.array[index].delete(key)
+}
+
 // define search for hashtable
-// func (h *HashTable) Search (key string) bool {
-// 	index := hash(key)
-// }
+func (h *HashTable) Search(key string) bool {
+	index := hash(key)
+	return h.array[index].search(key)
+}
 
 // define insert for bucket
 func (b *bucket) insert(k string) {
-	newHead := &bucketNode{key: k}
-	newHead.next = b.head
-	b.head = newHead
+	if !b.search(k) {
+		newHead := &bucketNode{key: k}
+		newHead.next = b.head
+		b.head = newHead
+	} else {
+		fmt.Printf("%v is already in the list\n", k)
+		return
+	}
+
 }
 
 // define remove for bucket
+func (b *bucket) delete(key string) {
+	if b.head.key == key {
+		b.head = b.head.next
+		return
+	}
+	previousToDelete := b.head
+	for previousToDelete.next != nil {
+		if previousToDelete.next.key == key {
+			previousToDelete.next = previousToDelete.next.next
+			fmt.Printf("%v is successfully removed\n", key)
+			return
+		}
+		previousToDelete = previousToDelete.next
+	}
+	fmt.Printf("Could not find %v\n", key)
+}
 
 // define search for bucket
+func (b *bucket) search(key string) bool {
+	currentNode := b.head
+	for currentNode != nil {
+		if currentNode.key == key {
+			return true
+		}
+		currentNode = currentNode.next
+	}
+	return false
+}
 
 func main() {
 	myHashTable := Init()
-	fmt.Printf("my hashtable is %v\n", myHashTable)
-	testBucket := &bucket{}
-	testBucket.insert("emi")
-	fmt.Printf("my bucket is %v\n", testBucket)
+	myHashTable.Insert("emi")
+	myHashTable.Insert("bond")
+	myHashTable.Insert("gio")
+	myHashTable.Insert("levi")
+	myHashTable.Insert("ram")
+	answer1 := myHashTable.Search("emi")
+	answer2 := myHashTable.Search("Yu")
+	fmt.Printf("awnser1 is %v\n", answer1)
+	fmt.Printf("awnser2 is %v\n", answer2)
+	myHashTable.Insert("emi")
+	myHashTable.Delete("emi")
+
 }
