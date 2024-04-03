@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"math"
 	"sort"
 )
 
@@ -75,13 +76,13 @@ func (s *SolutionTriSumZero) tripletToZero(unums []int) [][]int {
 		if i > 0 && unums[i] == unums[i-1] {
 			continue
 		}
-		s.searchPair(unums, -unums[i], i+1, &triplet) // left index is next element of current element unums[i]
+		searchPair(unums, -unums[i], i+1, &triplet) // left index is next element of current element unums[i]
 
 	}
 	return triplet
 }
 
-func (s *SolutionTriSumZero) searchPair(arr []int, targetSum int, left int, triplet *[][]int) {
+func searchPair(arr []int, targetSum int, left int, triplet *[][]int) {
 	right := len(arr) - 1 // last element of original array
 	for left < right {
 		currentSum := arr[left] + arr[right]
@@ -101,6 +102,100 @@ func (s *SolutionTriSumZero) searchPair(arr []int, targetSum int, left int, trip
 			right--
 		}
 	}
+}
+
+// 5. Given an array of unsorted numbers and a target number, find a triplet in the array whose sum is as close to the target number as possible, return the sum of the triplet. If there are more than one such triplet, return the sum of the triplet with the smallest sum
+type SolutionTripletSumClose struct{}
+
+func (s SolutionTripletSumClose) tripletCloseToSum(arr []int, targetSum int) int {
+	if arr == nil || len(arr) < 3 {
+		panic("IllegalArgumentException")
+	}
+
+	sort.Ints(arr)
+	smallestDifference := math.MaxInt32
+	for i := 0; i < len(arr)-2; i++ {
+		left, right := i+1, len(arr)-1
+		for left < right {
+			// finding the target difference
+			targetDiff := targetSum - arr[i] - arr[left] - arr[right]
+			if targetDiff == 0 { // found a triplet with an exact sum
+				return targetSum // return sum of all the numbers
+			}
+
+			// handle the smallest sum when we have more than one solution
+			if math.Abs(float64(targetDiff)) < math.Abs(float64(smallestDifference)) ||
+				(math.Abs(float64(targetDiff)) == math.Abs(float64(smallestDifference)) &&
+					targetDiff > smallestDifference) {
+				smallestDifference = targetDiff // save the closest and the biggest difference
+			}
+
+			if targetDiff > 0 {
+				left++ // need a triplet with a bigger sum
+			} else {
+				right-- // need a triplet with a smaller sum
+			}
+		}
+	}
+	return targetSum - smallestDifference
+}
+
+// 6. Given an array arr of unsorted numbers and a target sum, count all triplets in it such that arr[i] + arr[j] + arr[k] < target where i, j, and k are three different indices. Write a function to return the count of such triplets.
+type SolutionTripletSmallerSum struct{}
+
+func (s SolutionTripletSmallerSum) tripleWithSmallerSum(arr []int, target int) int {
+	if arr == nil || len(arr) < 3 {
+		return 0
+	}
+	count := 0
+	sort.Ints(arr)
+	for i := 0; i < len(arr)-2; i++ {
+		count += s.searchSmallerPair(arr, target-arr[i], i)
+	}
+	return count
+}
+
+func (s SolutionTripletSmallerSum) searchSmallerPair(arr []int, targetSum int, first int) int {
+	count := 0
+	left, right := first+1, len(arr)-1
+	for left < right {
+		if arr[left]+arr[right] < targetSum { // found the triplet
+			// since arr[right] >= arr[left], therefore, we can replace arr[right] by any
+			// number between left and right to get a sum less than the target sum
+			count += right - left
+			left++
+		} else {
+			right-- // we need a pair with a smaller sum
+		}
+	}
+	return count
+}
+
+// 7. Given an array with positive numbers and a positive target number, find all of its contiguous subarrays whose product is less than the target number.
+type SolutionSubarrayProductLessThanTaget struct{}
+
+func (a SolutionSubarrayProductLessThanTaget) subarraysProduct(arr []int, target int) [][]int {
+	var result [][]int
+	product := 1
+	left := 0
+
+	for right := 0; right < len(arr); right++ {
+		product *= arr[right]
+
+		for product >= target && left < len(arr) {
+			product /= arr[left]
+			left++
+		}
+
+		var tempList []int
+
+		for i := right; i >= left; i-- {
+			tempList = append([]int{arr[i]}, tempList...)
+
+			result = append(result, append([]int(nil), tempList...))
+		}
+	}
+	return result
 }
 
 func main() {
@@ -132,5 +227,29 @@ func main() {
 	unums2 := []int{-5, 2, -1, -2, 3}
 	fmt.Printf("triplets are %v\n", solution4.tripletToZero(unums1))
 	fmt.Printf("triplets are %v\n", solution4.tripletToZero(unums2))
+
+	solution5 := &SolutionTripletSumClose{}
+	closeNums1 := []int{-1, 0, 2, 3}
+	closeNum1 := 2
+	closeNums2 := []int{-3, -1, 1, 2}
+	closeNum2 := 1
+	fmt.Printf("closest diff is %v\n", solution5.tripletCloseToSum(closeNums1, closeNum1))
+	fmt.Printf("closest diff is %v\n", solution5.tripletCloseToSum(closeNums2, closeNum2))
+
+	solution6 := &SolutionTripletSmallerSum{}
+	smallnums1 := []int{-1, 0, 2, 3}
+	smallnum1 := 3
+	smallnums2 := []int{-1, 4, 2, 1, 3}
+	smallnum2 := 5
+	fmt.Printf("smallest triplet is %v\n", solution6.tripleWithSmallerSum(smallnums1, smallnum1))
+	fmt.Printf("smallest triplet is %v\n", solution6.tripleWithSmallerSum(smallnums2, smallnum2))
+
+	solution7 := &SolutionSubarrayProductLessThanTaget{}
+	productNums1 := []int{2, 5, 3, 10}
+	productTarget1 := 30
+	productNums2 := []int{8, 2, 6, 5}
+	productTarget2 := 50
+	fmt.Printf("product subarray is %v\n", solution7.subarraysProduct(productNums1, productTarget1))
+	fmt.Printf("product subarray is %v\n", solution7.subarraysProduct(productNums2, productTarget2))
 
 }
