@@ -28,6 +28,7 @@ func (n *Node) Insert(key int) {
 
 // define Search
 func (n *Node) Search(key int) bool {
+	// At the end of tree
 	if n == nil {
 		return false
 	}
@@ -37,6 +38,8 @@ func (n *Node) Search(key int) bool {
 	} else if n.Key > key {
 		return n.Left.Search(key)
 	}
+
+	// key is not larger than or smaller than right child or left child == match
 	return true
 }
 
