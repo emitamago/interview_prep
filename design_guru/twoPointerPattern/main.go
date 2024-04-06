@@ -198,6 +198,158 @@ func (a SolutionSubarrayProductLessThanTaget) subarraysProduct(arr []int, target
 	return result
 }
 
+// 8. Given an array containing 0s, 1s and 2s, sort the array in-place. You should treat numbers of the array as objects, hence, we can’t count 0s, 1s, and 2s to recreate the array.
+type SolutionDutchFlag struct{}
+
+func (s SolutionDutchFlag) dutchFlag(arr []int) []int {
+	low := 0
+	high := len(arr) - 1
+	for i := 0; i <= high; {
+		if arr[i] == 0 {
+			s.swap(arr, i, low)
+			i++
+			low++
+		} else if arr[i] == 1 {
+			i++
+		} else {
+			s.swap(arr, i, high)
+			// decrement 'high' only, after the swap the number at index 'i' could be 0, 1,
+			// or
+			high--
+		}
+
+	}
+
+	return arr
+}
+
+func (s SolutionDutchFlag) swap(arr []int, i, j int) {
+	arr[i], arr[j] = arr[j], arr[i]
+}
+
+// 9. Given an array of unsorted numbers and a target number, find all unique quadruplets in it, whose sum is equal to the target number
+type SolutionQuadrupleSumToTarget struct{}
+
+func (s SolutionQuadrupleSumToTarget) findTargetSum(arr []int, target int) [][]int {
+	sort.Ints(arr)
+	var quad [][]int
+	for i := 0; i < len(arr)-3; i++ {
+		if i > 0 && arr[i] == arr[i-1] {
+			continue
+		}
+		for j := i + 1; j < len(arr)-2; j++ {
+			if j > i+1 && arr[j] == arr[j-1] {
+				continue
+			}
+			quad = s.searchForPair(arr, target, i, j, quad)
+		}
+
+	}
+	return quad
+}
+
+func (s SolutionQuadrupleSumToTarget) searchForPair(arr []int, targetSum, first, second int, quad [][]int) [][]int {
+	left := second + 1
+	right := len(arr) - 1
+	for left < right {
+		sum := arr[first] + arr[second] + arr[left] + arr[right]
+		if sum == targetSum {
+			quad = append(quad, []int{arr[first], arr[second], arr[left], arr[right]})
+			left++
+			right--
+			for left < right && arr[left] == arr[left-1] {
+				left++
+			}
+			for left < right && arr[right] == arr[right+1] {
+				right--
+			}
+
+		} else if sum < targetSum {
+			left++
+		} else {
+			right--
+		}
+	}
+	return quad
+}
+
+// 10. Given two strings containing backspaces (identified by the character ‘#’), check if the two strings are equal.
+type SolutionBackSlash struct{}
+
+func (s SolutionBackSlash) compareBackSlash(str1, str2 string) bool {
+	index1 := len(str1) - 1
+	index2 := len(str2) - 1
+
+	for index1 >= 0 || index2 >= 0 {
+		i1 := s.getValidIndex(str1, index1)
+		i2 := s.getValidIndex(str2, index2)
+		if i1 < 0 && i2 < 0 {
+			return true
+		}
+		if i1 < 0 || i2 < 0 {
+			return false
+		}
+		if str1[i1] != str2[i2] {
+			return false
+		}
+		index1 = i1 - 1
+		index2 = i2 - 1
+	}
+	return true
+}
+
+func (s SolutionBackSlash) getValidIndex(str string, index int) int {
+	backslashCount := 0
+	for index >= 0 {
+		if str[index] == '#' {
+			backslashCount++
+		} else if backslashCount > 0 {
+			backslashCount--
+		} else {
+			break
+		}
+		index--
+	}
+	return index
+}
+
+// 11. Given an array, find the length of the smallest subarray in it which when sorted will sort the whole array.
+type SolutionMinSort struct{}
+
+func (s SolutionMinSort) findMinSubarry(arr []int) int {
+	low := 0
+	high := len(arr) - 1
+	for low < len(arr)-1 && arr[low] <= arr[low+1] {
+		low++
+	}
+	if low == len(arr)-1 {
+		return 0
+	}
+
+	for high > 0 && arr[high] >= arr[high-1] {
+		high--
+	}
+
+	subarrayMax := math.MinInt32
+	subarrayMin := math.MaxInt32
+	for k := low; k <= high; k++ {
+		if arr[k] > subarrayMax {
+			subarrayMax = arr[k]
+		}
+		if arr[k] < subarrayMin {
+			subarrayMin = arr[k]
+		}
+	}
+	for low > 0 && arr[low-1] > subarrayMin {
+		low--
+	}
+	for high < len(arr)-1 && arr[high+1] < subarrayMax {
+		high++
+	}
+
+	return high - low + 1
+}
+
 func main() {
 	solution1 := &SolutionPairWithTargetSum{}
 	pairNums1 := []int{1, 2, 3, 4, 6}
@@ -251,5 +403,27 @@ func main() {
 	productTarget2 := 50
 	fmt.Printf("product subarray is %v\n", solution7.subarraysProduct(productNums1, productTarget1))
 	fmt.Printf("product subarray is %v\n", solution7.subarraysProduct(productNums2, productTarget2))
+
+	solution8 := &SolutionDutchFlag{}
+	dutchArr1 := []int{1, 0, 2, 1, 0}
+	dutchArr2 := []int{2, 2, 0, 1, 2, 0}
+	fmt.Printf("dutch arr is %v\n", solution8.dutchFlag(dutchArr1))
+	fmt.Printf("dutch arr is %v\n", solution8.dutchFlag(dutchArr2))
+
+	sol9 := &SolutionQuadrupleSumToTarget{}
+	qNums := []int{4, 1, 2, -1, 1, -3}
+	qTarget := 1
+	fmt.Printf("quadrup is %v\n", sol9.findTargetSum(qNums, qTarget))
+
+	sol10 := &SolutionBackSlash{}
+	fmt.Printf("Blackslash is %v\n", sol10.compareBackSlash("xy#z", "xzz#"))
+	fmt.Printf("Blackslash is %v\n", sol10.compareBackSlash("xy#z", "xyz#"))
+	fmt.Printf("Blackslash is %v\n", sol10.compareBackSlash("xp#", "xyz##"))
+
+	sol11 := &SolutionMinSort{}
+	fmt.Printf("min subarray is %v\n", sol11.findMinSubarry([]int{1, 2, 5, 3, 7, 10, 9, 12}))
+	fmt.Printf("min subarray is %v\n", sol11.findMinSubarry([]int{1, 3, 2, 0, -1, 7, 10}))
+	fmt.Printf("min subarray is %v\n", sol11.findMinSubarry([]int{1, 2, 3}))
+	fmt.Printf("min subarray is %v\n", sol11.findMinSubarry([]int{3, 2, 1}))
 
 }
