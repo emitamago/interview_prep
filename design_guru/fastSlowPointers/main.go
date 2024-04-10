@@ -122,6 +122,53 @@ func (s SolHappyNumber) findSquareSum(num int) int {
 	return sum
 }
 
+// 5. Given the head of a Singly LinkedList, write a method to check if the LinkedList is a palindrome or not.
+type SolLinkedPalindrome struct{}
+
+func (s SolLinkedPalindrome) linedPalindorome(head *ListNode) bool {
+	if head == nil || head.Next == nil {
+		return true
+	}
+
+	// find middle of the LinkedList
+	slow := head
+	fast := head
+	for fast != nil && fast.Next != nil {
+		slow = slow.Next
+		fast = fast.Next.Next
+	}
+
+	headSecondHalf := s.reverse(slow) // reverse the second half
+	// store the head of reversed part to revert back later
+	copyHeadSecondHalf := headSecondHalf
+
+	// compare the first and the second half
+	for head != nil && headSecondHalf != nil {
+		if head.Val != headSecondHalf.Val {
+			break // not a palindrome
+		}
+		head = head.Next
+		headSecondHalf = headSecondHalf.Next
+	}
+
+	s.reverse(copyHeadSecondHalf)             // revert the reverse of the second half
+	if head == nil || headSecondHalf == nil { // if both halves match
+		return true
+	}
+	return false
+}
+
+func (s SolLinkedPalindrome) reverse(head *ListNode) *ListNode {
+	var prev *ListNode
+	for head != nil {
+		Next := head.Next
+		head.Next = prev
+		prev = head
+		head = Next
+	}
+	return prev
+}
+
 func main() {
 	head1 := &ListNode{Val: 1}
 	head1.Next = &ListNode{Val: 2}
@@ -157,4 +204,12 @@ func main() {
 	sol4 := &SolHappyNumber{}
 	fmt.Printf("Is it happy number %v\n", sol4.findHappyNumber(23))
 	fmt.Printf("Is it happy number %v\n", sol4.findHappyNumber(12))
+
+	head3 := &ListNode{Val: 2}
+	head3.Next = &ListNode{Val: 4}
+	head3.Next.Next = &ListNode{Val: 6}
+	head3.Next.Next.Next = &ListNode{Val: 4}
+	head3.Next.Next.Next.Next = &ListNode{Val: 2}
+	sol5 := &SolLinkedPalindrome{}
+	fmt.Printf("Is it Palindrome %v\n", sol5.linedPalindorome(head3))
 }
